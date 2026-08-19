@@ -1,6 +1,17 @@
-﻿.env
-.env.local
-.n8n/
-*.log
+﻿# OS / Editor files
 .DS_Store
 Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Environment Variables & Keys
+.env
+*.env
+secrets.json
+
+# Temporary Python files
+__pycache__/
+*.pyc
+fix.py
+fix_repo.py
