@@ -1,4 +1,6 @@
-# AI Lead Qualification & Slack Alerts Engine
+﻿import os, shutil, subprocess
+
+readme_content = """# AI Lead Qualification & Slack Alerts Engine
 
 An end-to-end automated B2B lead)]aluation pipeline built using l8n and LLM inference. The system receives inbound webhook payloads, evaluates prospective leads against BANT (Budget, Authority, Need, Timing) criteria via Groq LLM scoring, and conditionally dispatches real-time alerts to Slack channels for high-value leads.
 
@@ -54,3 +56,17 @@ Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType "app
 
 ## 𝓎 Security & Data Privacy
 All sensitive webhook URLs and API keys have been stripped and replaced with environment variable parameters (`{{Fenv.SLACK_WEBHOOK_URL}}`).
+"""
+
+# Fix README
+with open("README.md", "w", encoding="utf-8") as f:
+    f.write(readme_content)
+print("README.md updated")
+
+# Fix Image
+img_path = os.path.expanduser("~/Downloads/AI Lead Qualification & Slack Alerts.drawio.png")
+os.makdirs("assets", exist_ok=True)
+if os.path.exists(img_path):
+    shutil.copy(img_path, "assets/architecture.png")
+    print("Image copied")
+
