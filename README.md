@@ -54,3 +54,5 @@ Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType "app
 
 ## 𝓎 Security & Data Privacy
 All sensitive webhook URLs and API keys have been stripped and replaced with environment variable parameters (`{{Fenv.SLACK_WEBHOOK_URL}}`).
+
+![System Architecture](assets/architecture.png)
