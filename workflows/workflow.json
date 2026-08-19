@@ -1,0 +1,199 @@
+﻿{
+  "name": "AI Lead Qualification & Slack Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-qualify-input-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-368, -64],
+      "id": "65e45253-f42a-4c0f-b491-a0def2f21816",
+      "name": "Webhook",
+      "webhookId": "webhook-lead-qualify-id"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.text).score }}",
+                    "rightValue": 70,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "c1ff39b7-1ebe-480d-8cfd-9a6196053eb4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4dda5a44-30e1-47f0-96f8-26c098e6528c",
+                    "leftValue": "={{ JSON.parse($json.text).score }}",
+                    "rightValue": 70,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [128, -64],
+      "id": "3f04bc8a-0c23-452d-b3e9-c95321bce989",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bdd6ad65-879e-4232-b8eb-d256d2e5e7a0",
+              "name": "alert_message",
+              "value": "=VIP LEAD ALERT: {{ $('Webhook').item.json.body.fullName }} from {{ $('Webhook').item.json.body.company }} requested automation with a budget of {{$('Webhook').item.json.body.budget }}!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [352, -80],
+      "id": "8c4eac19-f996-4624-9398-1b7421f8e909",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert B2B Lead Qualification Specialist. Evaluate the incoming lead data based on BANT (Budget, Authority, Need, Timing) criteria and assign a qualification status.\n\n### Qualification Criteria:\n- Qualified / Hot Lead:\n  - Role: VP, Director, C-Level, or Head of Department\n  - Company Size: 50+ employees\n  - Budget: $10,000+\n- Unqualified / Low Priority:\n  - Role: Student, Intern, Individual Contributor, or non-decision maker\n  - Company Size: less than 10 employees\n  - Budget: less than $5,000 or empty\n\n### Lead Input Data:\n- Full Name: {{ $json.body.fullName }}\n- Company: {{$json.body.company }}\n- Email: {{ $json.body.email }}\n- Company Size: {{$json.body.companySize }}\n- Budget: {{ $json.body.budget }}\n- Role: {{$json.body.role }}\n\n### Output Formatting Rules:\n1. \"budget\": Format as a clean string WITH the dollar sign and commas (e.g., \"$15,000\"). Never output unescaped symbols or raw comma-separated fragments.\n2. CRITICAL: You MUST respond ONLY with a raw JSON object. Do NOT include markdown formatting (no ```json code blocks), wrappers, or any introductory text.\n\nExample output structure:\n{\n  \"status\": \"Qualified\",\n  \"score\": 85,\n  \"budget\": \"$15,000\",\n  \"reason\": \"High decision-making authority (VP) with sufficient budget ($15,000) and company scale.\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [-192, -64],
+      "id": "a511736e-591d-44fc-a1e5-29551992f734",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "allam-2-7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [-336, 128],
+      "id": "3e6f254d-cfbf-47ea-8ff7-95fa6d97d835",
+      "name": "Groq Chat Model1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [560, 224],
+      "id": "b5de8eff-fbd5-4936-ab24-ffcfe31f60d7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "006f8213-02fe-4276-9702-2c9c7eb6e024",
+              "name": "alert_message",
+              "value": "=STANDARD LEAD LOGGED: {{ $('Webhook').item.json.body.fullName }} from {{ $('Webhook').item.json.body.company }} marked for standard email nurture.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [192, 224],
+      "id": "2d0c85ab-0aaf-4f30-a61f-0073954133c3",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"🚀 *NEW VIP LEAD ALERT*\\n*Name:* {{ $('Webhook').item.json.body.name || $('Webhook').item.json.body.fullName }}\\n*Company:* {{ $('Webhook').item.json.body.company }}\\n*Budget:* {{ $('Webhook').item.json.body.budget }}\\n*Score:* {{ JSON.parse($('Basic LLM Chain').item.json.text).score }}/100\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [608, -80],
+      "id": "b9cf0d9d-92d7-48c8-8e52-22a5e7709c50",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Basic LLM Chain", "type": "main", "index": 0}]]
+    },
+    "Switch": {
+      "main": [
+        [{"node": "Edit Fields", "type": "main", "index": 0}],
+        [{"node": "Edit Fields1", "type": "main", "index": 0}]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [[{"node": "Switch", "type": "main", "index": 0}]]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [[{"node": "Basic LLM Chain", "type": "ai_languageModel", "index": 0}]]
+    },
+    "Edit Fields": {
+      "main": [[{"node": "HTTP Request", "type": "main", "index": 0}]]
+    },
+    "Edit Fields1": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    },
+    "HTTP Request": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}
